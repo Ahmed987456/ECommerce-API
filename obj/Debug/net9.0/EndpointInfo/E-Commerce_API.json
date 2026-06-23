@@ -10,6 +10,7 @@
         "tags": [
           "Auth"
         ],
+        "summary": "متاح للكل - تسجيل الدخول",
         "requestBody": {
           "content": {
             "multipart/form-data": {
@@ -47,30 +48,26 @@
         "tags": [
           "CarItems"
         ],
+        "summary": "Customer فقط - إضافة منتج للكارت",
         "requestBody": {
           "content": {
             "multipart/form-data": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "UserId": {
-                    "type": "integer",
-                    "format": "int32"
-                  },
                   "ProductId": {
                     "type": "integer",
                     "format": "int32"
                   },
                   "Quantity": {
+                    "maximum": 2147483647,
+                    "minimum": 1,
                     "type": "integer",
                     "format": "int32"
                   }
                 }
               },
               "encoding": {
-                "UserId": {
-                  "style": "form"
-                },
                 "ProductId": {
                   "style": "form"
                 },
@@ -91,17 +88,10 @@
         "tags": [
           "CarItems"
         ],
+        "summary": "Customer فقط - حذف منتج من الكارت",
         "parameters": [
           {
             "name": "ProductId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          },
-          {
-            "name": "UserId",
             "in": "query",
             "schema": {
               "type": "integer",
@@ -119,30 +109,26 @@
         "tags": [
           "CarItems"
         ],
+        "summary": "Customer فقط - تعديل كمية منتج في الكارت",
         "requestBody": {
           "content": {
             "multipart/form-data": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "UserId": {
-                    "type": "integer",
-                    "format": "int32"
-                  },
                   "ProductId": {
                     "type": "integer",
                     "format": "int32"
                   },
                   "Quantity": {
+                    "maximum": 2147483647,
+                    "minimum": 1,
                     "type": "integer",
                     "format": "int32"
                   }
                 }
               },
               "encoding": {
-                "UserId": {
-                  "style": "form"
-                },
                 "ProductId": {
                   "style": "form"
                 },
@@ -160,22 +146,12 @@
         }
       }
     },
-    "/api/CarItems/{userId}": {
+    "/api/CarItems/MyCart": {
       "get": {
         "tags": [
           "CarItems"
         ],
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
+        "summary": "Customer فقط - عرض الكارت",
         "responses": {
           "200": {
             "description": "OK"
@@ -188,6 +164,7 @@
         "tags": [
           "Categorys"
         ],
+        "summary": "متاح للكل - عرض كل الكاتيجوريز",
         "responses": {
           "200": {
             "description": "OK"
@@ -198,6 +175,7 @@
         "tags": [
           "Categorys"
         ],
+        "summary": "Admin فقط - إضافة كاتيجوري أو SubCategory",
         "requestBody": {
           "content": {
             "multipart/form-data": {
@@ -206,11 +184,18 @@
                 "properties": {
                   "Name": {
                     "type": "string"
+                  },
+                  "ParentCategoryId": {
+                    "type": "integer",
+                    "format": "int32"
                   }
                 }
               },
               "encoding": {
                 "Name": {
+                  "style": "form"
+                },
+                "ParentCategoryId": {
                   "style": "form"
                 }
               }
@@ -227,6 +212,7 @@
         "tags": [
           "Categorys"
         ],
+        "summary": "Admin فقط - حذف كاتيجوري",
         "parameters": [
           {
             "name": "id",
@@ -249,6 +235,7 @@
         "tags": [
           "Categorys"
         ],
+        "summary": "متاح للكل - عرض كاتيجوري بالـ ID",
         "parameters": [
           {
             "name": "id",
@@ -270,6 +257,7 @@
         "tags": [
           "Categorys"
         ],
+        "summary": "Admin فقط - تعديل كاتيجوري",
         "parameters": [
           {
             "name": "id",
@@ -312,16 +300,7 @@
         "tags": [
           "Orders"
         ],
-        "parameters": [
-          {
-            "name": "userId",
-            "in": "query",
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
+        "summary": "Customer فقط - إنشاء أوردر جديد",
         "responses": {
           "200": {
             "description": "OK"
@@ -329,22 +308,12 @@
         }
       }
     },
-    "/api/Orders/{id}": {
+    "/api/Orders/MyOrders": {
       "get": {
         "tags": [
           "Orders"
         ],
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "type": "integer",
-              "format": "int32"
-            }
-          }
-        ],
+        "summary": "Customer فقط - عرض كل أوردراتي",
         "responses": {
           "200": {
             "description": "OK"
@@ -357,6 +326,7 @@
         "tags": [
           "Orders"
         ],
+        "summary": "Customer فقط - عرض تفاصيل أوردر",
         "parameters": [
           {
             "name": "orderId",
@@ -380,6 +350,7 @@
         "tags": [
           "Orders"
         ],
+        "summary": "Admin فقط - تعديل حالة الأوردر",
         "parameters": [
           {
             "name": "orderId",
@@ -422,6 +393,7 @@
         "tags": [
           "Orders"
         ],
+        "summary": "Customer فقط - إلغاء أوردر",
         "parameters": [
           {
             "name": "orderid",
@@ -445,6 +417,7 @@
         "tags": [
           "Products"
         ],
+        "summary": "متاح للكل - عرض كل المنتجات",
         "responses": {
           "200": {
             "description": "OK"
@@ -455,6 +428,7 @@
         "tags": [
           "Products"
         ],
+        "summary": "Admin فقط - إضافة منتج جديد",
         "requestBody": {
           "content": {
             "multipart/form-data": {
@@ -526,6 +500,7 @@
         "tags": [
           "Products"
         ],
+        "summary": "Admin فقط - تعديل منتج",
         "parameters": [
           {
             "name": "id",
@@ -598,6 +573,7 @@
         "tags": [
           "Products"
         ],
+        "summary": "Admin فقط - حذف منتج",
         "parameters": [
           {
             "name": "id",
@@ -620,6 +596,7 @@
         "tags": [
           "Products"
         ],
+        "summary": "متاح للكل - عرض منتج بالـ ID",
         "parameters": [
           {
             "name": "id",
@@ -643,6 +620,7 @@
         "tags": [
           "Products"
         ],
+        "summary": "متاح للكل - عرض منتجات كاتيجوري معينة",
         "parameters": [
           {
             "name": "id",
@@ -666,6 +644,7 @@
         "tags": [
           "Products"
         ],
+        "summary": "متاح للكل - البحث عن منتج بالاسم",
         "parameters": [
           {
             "name": "Name",
@@ -687,6 +666,7 @@
         "tags": [
           "Users"
         ],
+        "summary": "متاح للكل - تسجيل يوزر جديد",
         "requestBody": {
           "content": {
             "multipart/form-data": {
@@ -736,6 +716,7 @@
         "tags": [
           "Users"
         ],
+        "summary": "Admin فقط - عرض كل اليوزرز",
         "responses": {
           "200": {
             "description": "OK"
@@ -748,6 +729,7 @@
         "tags": [
           "Users"
         ],
+        "summary": "Admin يشوف أي يوزر - Customer يشوف بياناته هو بس",
         "parameters": [
           {
             "name": "UserId",
@@ -769,6 +751,7 @@
         "tags": [
           "Users"
         ],
+        "summary": "Admin يعدل أي يوزر - Customer يعدل بياناته هو بس",
         "parameters": [
           {
             "name": "UserId",
@@ -815,6 +798,7 @@
         "tags": [
           "Users"
         ],
+        "summary": "Admin فقط - حذف يوزر",
         "parameters": [
           {
             "name": "UserId",
@@ -826,6 +810,49 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/Users/{UserId}/role": {
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Admin فقط - تغيير Role يوزر",
+        "parameters": [
+          {
+            "name": "UserId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "role": {
+                    "$ref": "#/components/schemas/UserRole"
+                  }
+                }
+              },
+              "encoding": {
+                "role": {
+                  "style": "form"
+                }
+              }
+            }
+          }
+        },
         "responses": {
           "200": {
             "description": "OK"
@@ -845,27 +872,27 @@
           "Cancelled"
         ],
         "type": "string"
+      },
+      "UserRole": {
+        "enum": [
+          "Customer",
+          "Admin"
+        ],
+        "type": "string"
+      }
+    },
+    "securitySchemes": {
+      "Bearer": {
+        "type": "apiKey",
+        "description": "اكتب: Bearer {token}",
+        "name": "Authorization",
+        "in": "header"
       }
     }
   },
-  "tags": [
+  "security": [
     {
-      "name": "Auth"
-    },
-    {
-      "name": "CarItems"
-    },
-    {
-      "name": "Categorys"
-    },
-    {
-      "name": "Orders"
-    },
-    {
-      "name": "Products"
-    },
-    {
-      "name": "Users"
+      "Bearer": [ ]
     }
   ]
 }

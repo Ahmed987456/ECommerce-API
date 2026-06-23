@@ -11,24 +11,24 @@ namespace E_Commerce_API.Services.CarServices
             _context = context;
         }
 
-        public async Task CreateCarItem(CreateCartItemDto dto)
+        public async Task CreateCarItem(CreateCartItemDto dto, int userId)
         {
-            var CarItem= await _context.CartItems.FirstOrDefaultAsync(
-                s=>s.UserId == dto.UserId && s.ProductId == dto.ProductId
-                );
+            var CarItem = await _context.CartItems.FirstOrDefaultAsync(
+                s => s.UserId == userId && s.ProductId == dto.ProductId
+            );
             if (CarItem != null)
             {
                 CarItem.Quantity += dto.Quantity;
             }
-            else 
+            else
             {
                 var NewItem = new CartItem
                 {
                     ProductId = dto.ProductId,
                     Quantity = dto.Quantity,
-                    UserId = dto.UserId,
+                    UserId = userId,
                 };
-                await _context.CartItems.AddAsync( NewItem );
+                await _context.CartItems.AddAsync(NewItem);
             }
             await _context.SaveChangesAsync();
         }

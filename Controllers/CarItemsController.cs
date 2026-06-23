@@ -2,20 +2,19 @@
 using E_Commerce_API.Services.CarServices;
 using E_Commerce_API.Services.ProductService;
 using E_Commerce_API.Services.UserService;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace E_Commerce_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CarItemsController : ControllerBase
+    public class CarItemsController : BaseController
     {
         private readonly IUserService _userService;
         private readonly ICarService _carService;
         private readonly IProductService _productService;
         private readonly IMapper _mapper;
-
 
         public CarItemsController(IUserService userService, ICarService carService, IProductService productService, IMapper mapper)
         {
@@ -25,70 +24,69 @@ namespace E_Commerce_API.Controllers
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// Customer فقط - إضافة منتج للكارت
+        /// </summary>
+        [Authorize(Roles = "Customer")]
         [HttpPost]
-
-        public async Task<IActionResult> AddItemForCar([FromForm] CreateCartItemDto dto) 
+        public async Task<IActionResult> AddItemForCar([FromForm] CreateCartItemDto dto)
         {
-            var User = await _userService.GetUserById(dto.UserId);
-            if (User == null) 
-               return NotFound("Not User Found With This Id");
-
-            var Product = await _productService.GetById(dto.ProductId);
-            if (Product == null)
+            var userId = GetCurrentUserId();
+            var product = await _productService.GetById(dto.ProductId);
+            if (product == null)
                 return NotFound("Not Product Found With This Id");
-
-            if (Product.StockQuantity <= 0)
-                return BadRequest(error: "There is not enough of the product.");
-
-            if (dto.Quantity > Product.StockQuantity)
+            if (product.StockQuantity <= 0)
+                return BadRequest("There is not enough of the product.");
+            if (dto.Quantity > product.StockQuantity)
                 return BadRequest("The quantity requested exceeds the available stock.");
-            await _carService.CreateCarItem(dto);
+            await _carService.CreateCarItem(dto,userId);
             return Ok("Add Succeded");
         }
 
-        [HttpGet("{userId}")]
-        public async Task<IActionResult> GetCartAsync(int userId)
+        /// <summary>
+        /// Customer فقط - عرض الكارت
+        /// </summary>
+        [Authorize(Roles = "Customer")]
+        [HttpGet("MyCart")]
+        public async Task<IActionResult> GetCartAsync()
         {
-            var user = await _userService.GetUserById(userId);
-
-            if (user == null)
-                return NotFound("User not found");
-
+            var userId = GetCurrentUserId();
             var result = await _carService.GetUserCart(userId);
             return Ok(result);
         }
 
+        /// <summary>
+        /// Customer فقط - حذف منتج من الكارت
+        /// </summary>
+        [Authorize(Roles = "Customer")]
         [HttpDelete]
-
-        public async Task<IActionResult> DeleteItemFromCart(int ProductId, int UserId) 
+        public async Task<IActionResult> DeleteItemFromCart(int ProductId)
         {
-            var item = await _carService.GetCartItem(ProductId, UserId);
-
+            var userId = GetCurrentUserId();
+            var item = await _carService.GetCartItem(userId, ProductId);
             if (item == null)
                 return NotFound("Item not found in cart");
             await _carService.DeleteCarItem(item);
             return NoContent();
         }
+
+        /// <summary>
+        /// Customer فقط - تعديل كمية منتج في الكارت
+        /// </summary>
+        [Authorize(Roles = "Customer")]
         [HttpPut]
-
-        public async Task<IActionResult> UpdateCartQuantity([FromForm] UpdateCartDto dto) 
+        public async Task<IActionResult> UpdateCartQuantity([FromForm] UpdateCartDto dto)
         {
-            var User = await _userService.GetUserById(dto.UserId);
-            if (User == null)
-                return NotFound("Not User Found With This Id");
-
-            var Product = await _productService.GetById(dto.ProductId);
-            if (Product == null)
+            var userId = GetCurrentUserId();
+            var product = await _productService.GetById(dto.ProductId);
+            if (product == null)
                 return NotFound("Not Product Found With This Id");
-
-            var item = await _carService.GetCartItem( dto.UserId, dto.ProductId);
+            var item = await _carService.GetCartItem(userId, dto.ProductId);
             if (item == null)
                 return BadRequest("This product is not in the basket.");
-
-            if (dto.Quantity > Product.StockQuantity)
+            if (dto.Quantity > product.StockQuantity)
                 return BadRequest("The quantity requested exceeds the available stock.");
-
-             _mapper.Map(dto, item);
+            _mapper.Map(dto, item);
             await _carService.UpdateCarItemQuantity(item);
             return Ok("Cart Updated Successfully");
         }

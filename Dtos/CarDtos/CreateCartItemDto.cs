@@ -1,11 +1,13 @@
-﻿namespace E_Commerce_API.Dtos.CarDtos
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace E_Commerce_API.Dtos.CarDtos
 {
     public class CreateCartItemDto
     {
-        public int UserId { get; set; }
 
         public int ProductId { get; set; }
 
+        [Range(1, int.MaxValue, ErrorMessage = "Quantity must be greater than zero")]
         public int Quantity { get; set; }
     }
 }

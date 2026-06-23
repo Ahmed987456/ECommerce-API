@@ -1,7 +1,7 @@
 ﻿using E_Commerce_API.Dtos.CategoryDtos;
 using E_Commerce_API.Services.CategoryServices;
 using E_Commerce_API.Services.ProductService;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace E_Commerce_API.Controllers
@@ -20,19 +20,21 @@ namespace E_Commerce_API.Controllers
             _mapper = mapper;
             _productService = productService;
         }
-        
-        #region Get
 
+        /// <summary>
+        /// متاح للكل - عرض كل الكاتيجوريز
+        /// </summary>
         [HttpGet]
-
-        public async Task<IActionResult> GetAllAsync() 
+        public async Task<IActionResult> GetAllAsync()
         {
-         var Categories = await _categoryService.GetAllCategories();
+            var Categories = await _categoryService.GetAllCategories();
             return Ok(Categories);
         }
 
+        /// <summary>
+        /// متاح للكل - عرض كاتيجوري بالـ ID
+        /// </summary>
         [HttpGet("{id}")]
-
         public async Task<IActionResult> GetByIdAsync(int id)
         {
             var Categorie = await _categoryService.GetCategoryDetails(id);
@@ -41,60 +43,69 @@ namespace E_Commerce_API.Controllers
             return Ok(Categorie);
         }
 
-        #endregion
-
-        #region Create
-
+        /// <summary>
+        /// Admin فقط - إضافة كاتيجوري أو SubCategory
+        /// </summary>
+        [Authorize(Roles = "Admin")]
         [HttpPost]
-
-        public async Task<IActionResult> CreateAsync([FromForm]CreateCategoryDto dto) 
+        public async Task<IActionResult> CreateAsync([FromForm] CreateCategoryDto dto)
         {
             var exists = await _categoryService.CategoryExists(dto.Name);
             if (exists)
                 return BadRequest("Category already exists");
+
+            if (dto.ParentCategoryId.HasValue)
+            {
+                var parent = await _categoryService.GetById(dto.ParentCategoryId.Value);
+                if (parent == null)
+                    return NotFound("Parent Category Not Found");
+                if (parent.ParentCategoryId != null)
+                    return BadRequest("Cannot add a SubCategory under another SubCategory");
+            }
+
             var category = _mapper.Map<Category>(dto);
             await _categoryService.CreateCategory(category);
-            return Ok(category);
+            return Ok(new CategoryDto
+            {
+                Id = category.Id,
+                Name = category.Name
+            });
         }
 
-        #endregion
-
-        #region Update
+        /// <summary>
+        /// Admin فقط - تعديل كاتيجوري
+        /// </summary>
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-
-        public async Task<IActionResult> UpdateCategoryAsync(int id, [FromForm] UpdateCategoryDto dto) 
+        public async Task<IActionResult> UpdateCategoryAsync(int id, [FromForm] UpdateCategoryDto dto)
         {
-          var category = await _categoryService.GetById(id);
-            if(category == null)
-                return NotFound("Not Category Found With This Id");
-            var exist = await _categoryService.CategoryExistsForUpdate(dto.Name, id);
-             if(exist)
-                return BadRequest("The New Name Is Exists");
-            await _categoryService.UpdateCategory(_mapper.Map(dto,category));  
-            return Ok(new CategoryDto {
-            Id = id,
-            Name = dto.Name,
-            });
-         }
-
-        #endregion
-
-        #region Delete
-        [HttpDelete]
-
-        public async Task<IActionResult> DeleteCategoryAsync(int id) 
-        {
-         var category = await _categoryService.GetById(id);
+            var category = await _categoryService.GetById(id);
             if (category == null)
                 return NotFound("Not Category Found With This Id");
+            var exist = await _categoryService.CategoryExistsForUpdate(dto.Name, id);
+            if (exist)
+                return BadRequest("The New Name Is Exists");
+            await _categoryService.UpdateCategory(_mapper.Map(dto, category));
+            return Ok(new CategoryDto { Id = id, Name = dto.Name });
+        }
+
+        /// <summary>
+        /// Admin فقط - حذف كاتيجوري
+        /// </summary>
+        [Authorize(Roles = "Admin")]
+        [HttpDelete]
+        public async Task<IActionResult> DeleteCategoryAsync(int id)
+        {
+            var category = await _categoryService.GetById(id);
+            if (category == null)
+                return NotFound("Not Category Found With This Id");
+            if (category.SubCategories.Any())
+                return BadRequest("Cannot delete category because it has SubCategories");
             var hasProducts = await _productService.HasProductsInCategory(id);
             if (hasProducts)
                 return BadRequest("Cannot delete category because it contains products");
             await _categoryService.DeleteCategory(category);
             return NoContent();
         }
-
-        #endregion
-
     }
 }

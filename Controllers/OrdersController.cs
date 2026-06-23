@@ -1,14 +1,14 @@
 ﻿using E_Commerce_API.Dtos.OrdersDto;
 using E_Commerce_API.Services.OrderService;
 using E_Commerce_API.Services.UserService;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace E_Commerce_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class OrdersController : ControllerBase
+    public class OrdersController : BaseController
     {
         private readonly IUserService _userService;
         private readonly IOrderService _orderService;
@@ -19,19 +19,17 @@ namespace E_Commerce_API.Controllers
             _userService = userService;
         }
 
+        /// <summary>
+        /// Customer فقط - إنشاء أوردر جديد
+        /// </summary>
+        [Authorize(Roles = "Customer")]
         [HttpPost("CreateOrder")]
-        public async Task<IActionResult> CreateOrder(int userId)
+        public async Task<IActionResult> CreateOrder()
         {
-            var user = await _userService.GetUserById(userId);
-
-            if (user == null)
-                return NotFound("User not found");
-
+            var userId = GetCurrentUserId();
             var order = await _orderService.CreateOrder(userId);
-
             if (order == null)
                 return BadRequest("Cart is empty or quantity unavailable");
-
             return Ok(new OrderDto
             {
                 OrderId = order.Id,
@@ -40,30 +38,41 @@ namespace E_Commerce_API.Controllers
             });
         }
 
-        [HttpGet("{id}")]
-
-        public async Task<IActionResult> GetAllUserOrders(int id) 
+        /// <summary>
+        /// Customer فقط - عرض كل أوردراتي
+        /// </summary>
+        [Authorize(Roles = "Customer")]
+        [HttpGet("MyOrders")]
+        public async Task<IActionResult> GetAllUserOrders()
         {
-            var user = await _userService.GetUserById(id);
-            if (user == null)
-                return NotFound("Not User Found With This Id");
-            var orders = await _orderService.GetAllUserOrders(id);
+            var userId = GetCurrentUserId();
+            var orders = await _orderService.GetAllUserOrders(userId);
             return Ok(orders);
         }
 
+        /// <summary>
+        /// Customer فقط - عرض تفاصيل أوردر
+        /// </summary>
+        [Authorize(Roles = "Customer")]
         [HttpGet("orderdetails/{orderId}")]
-
-        public async Task<IActionResult> OrderDetailsAsync(int orderId) 
+        public async Task<IActionResult> OrderDetailsAsync(int orderId)
         {
-          var order = await _orderService.GetOrderDetails(orderId);
+            var userId = GetCurrentUserId();
+            var order = await _orderService.GetOrderById(orderId);
             if (order == null)
                 return NotFound("Not Order Found With This Id");
-          return Ok(order);
+            if (order.UserId != userId)
+                return Forbid();
+            var orderDetails = await _orderService.GetOrderDetails(orderId);
+            return Ok(orderDetails);
         }
 
+        /// <summary>
+        /// Admin فقط - تعديل حالة الأوردر
+        /// </summary>
+        [Authorize(Roles = "Admin")]
         [HttpPut("UpdateStatus/{orderId}")]
-
-        public async Task<IActionResult> UpdateOraderStatus(int orderId,[FromForm] UpdateOrderStatusDto dto) 
+        public async Task<IActionResult> UpdateOraderStatus(int orderId, [FromForm] UpdateOrderStatusDto dto)
         {
             var order = await _orderService.GetOrderById(orderId);
             if (order == null)
@@ -73,20 +82,22 @@ namespace E_Commerce_API.Controllers
             return Ok("Order Status Updated Successfully");
         }
 
+        /// <summary>
+        /// Customer فقط - إلغاء أوردر
+        /// </summary>
+        [Authorize(Roles = "Customer")]
         [HttpPut("CancelOrder/{orderid}")]
-
-        public async Task<IActionResult> CancelOrderAsync(int orderid) 
+        public async Task<IActionResult> CancelOrderAsync(int orderid)
         {
+            var userId = GetCurrentUserId();
             var order = await _orderService.GetOrderById(orderid);
-
             if (order == null)
                 return NotFound("Not Order Found With This Id");
-
+            if (order.UserId != userId)
+                return Forbid();
             var result = await _orderService.CancelOrder(orderid);
-
             if (result != "Success")
                 return BadRequest(result);
-
             return Ok("Order Cancelled Successfully");
         }
     }

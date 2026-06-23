@@ -1,16 +1,17 @@
 ﻿using E_Commerce_API.Dtos.UserDtos;
+using E_Commerce_API.Enums;
 using E_Commerce_API.Models;
 using E_Commerce_API.Services.CarServices;
 using E_Commerce_API.Services.OrderService;
 using E_Commerce_API.Services.UserService;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace E_Commerce_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class UsersController : ControllerBase
+    public class UsersController : BaseController
     {
         private readonly IUserService _userService;
         private readonly IOrderService _orderService;
@@ -25,49 +26,65 @@ namespace E_Commerce_API.Controllers
             _carService = carService;
         }
 
-        //CreateNewUser
+        /// <summary>
+        /// متاح للكل - تسجيل يوزر جديد
+        /// </summary>
         [HttpPost]
-
         public async Task<IActionResult> CreatUserAsync([FromForm] CreateUserDto dto)
         {
             var exisitEmail = await _userService.Emailconfirmation(dto.Email);
             if (exisitEmail)
                 return BadRequest("The email already exists");
             var user = _mapper.Map<User>(dto);
-
+            user.Password = BCrypt.Net.BCrypt.HashPassword(dto.Password);
             await _userService.CreateUser(user);
-
             return Ok(_mapper.Map<UserDto>(user));
         }
 
-        //GetAllUser
+        /// <summary>
+        /// Admin فقط - عرض كل اليوزرز
+        /// </summary>
+        [Authorize(Roles = "Admin")]
         [HttpGet]
-
         public async Task<IActionResult> GetAllUsersAsync()
         {
             var users = await _userService.GetAllUsers();
             return Ok(users);
         }
 
-        //GetUserById
+        /// <summary>
+        /// Admin يشوف أي يوزر - Customer يشوف بياناته هو بس
+        /// </summary>
+        [Authorize]
         [HttpGet("{UserId}")]
-
         public async Task<IActionResult> GetUserByIdAsync(int UserId)
         {
+            var currentUserId = GetCurrentUserId();
+            var currentUserRole = GetCurrentUserRole();
+
+            if (currentUserRole != "Admin" && currentUserId != UserId)
+                return Forbid();
+
             var user = await _userService.GetUserById(UserId);
             if (user == null)
                 return NotFound("Not User Found With This Id");
-
             return Ok(_mapper.Map<UserDto>(user));
         }
 
-        //UpdateUser
+        /// <summary>
+        /// Admin يعدل أي يوزر - Customer يعدل بياناته هو بس
+        /// </summary>
+        [Authorize]
         [HttpPut("{UserId}")]
-
         public async Task<IActionResult> UpdateUser(int UserId, [FromForm] UpdateUserDto dto)
         {
-            var user = await _userService.GetUserById(UserId);
+            var currentUserId = GetCurrentUserId();
+            var currentUserRole = GetCurrentUserRole();
 
+            if (currentUserRole != "Admin" && currentUserId != UserId)
+                return Forbid();
+
+            var user = await _userService.GetUserById(UserId);
             if (user == null)
                 return NotFound("Not User Found With This Id");
             if (!string.IsNullOrEmpty(dto.Email))
@@ -76,33 +93,42 @@ namespace E_Commerce_API.Controllers
                 if (emailExists)
                     return BadRequest("Email already exists");
             }
-
             _mapper.Map(dto, user);
             await _userService.UpdateUser(user);
             return Ok("Modified successfully");
         }
 
-        //DeleteUser
-        [HttpDelete("{UserId}")]
-
-        public async Task<IActionResult> DeleteUserAsync(int UserId) 
+        /// <summary>
+        /// Admin فقط - تغيير Role يوزر
+        /// </summary>
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{UserId}/role")]
+        public async Task<IActionResult> ChangeUserRole(int UserId, [FromForm] UserRole role)
         {
             var user = await _userService.GetUserById(UserId);
-
             if (user == null)
                 return NotFound("Not User Found With This Id");
-
-            var order = await _orderService.HasOrders(UserId);
-
-            if (order)
-                return BadRequest("Cannot delete user because he has orders");
-
-            await _carService.DeleteUserCartItems(UserId);
-
-            await _userService.DeleteUser(user);
-
-            return NoContent();
+            user.Role = role;
+            await _userService.UpdateUser(user);
+            return Ok("Role Updated Successfully");
         }
 
+        /// <summary>
+        /// Admin فقط - حذف يوزر
+        /// </summary>
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{UserId}")]
+        public async Task<IActionResult> DeleteUserAsync(int UserId)
+        {
+            var user = await _userService.GetUserById(UserId);
+            if (user == null)
+                return NotFound("Not User Found With This Id");
+            var order = await _orderService.HasOrders(UserId);
+            if (order)
+                return BadRequest("Cannot delete user because he has orders");
+            await _carService.DeleteUserCartItems(UserId);
+            await _userService.DeleteUser(user);
+            return NoContent();
+        }
     }
 }

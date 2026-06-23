@@ -16,7 +16,7 @@
             if (user == null)
                 return null;
 
-            if (user.Password != password)
+            if (!BCrypt.Net.BCrypt.Verify(password, user.Password))
                 return null;
 
             return user;

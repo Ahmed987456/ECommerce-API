@@ -4,7 +4,7 @@ namespace E_Commerce_API.Services.CarServices
 {
     public interface ICarService
     {
-        Task CreateCarItem(CreateCartItemDto dto);
+        Task CreateCarItem(CreateCartItemDto dto, int userId);
 
         Task<CartDto> GetUserCart(int userId);
 
