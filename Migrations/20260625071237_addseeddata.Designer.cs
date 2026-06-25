@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace E_Commerce_API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20260518132522_add_tables")]
-    partial class add_tables
+    [Migration("20260625071237_addseeddata")]
+    partial class addseeddata
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -64,7 +64,12 @@ namespace E_Commerce_API.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<int?>("ParentCategoryId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("ParentCategoryId");
 
                     b.ToTable("Categories");
                 });
@@ -211,6 +216,15 @@ namespace E_Commerce_API.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("E_Commerce_API.Models.Category", b =>
+                {
+                    b.HasOne("E_Commerce_API.Models.Category", "ParentCategory")
+                        .WithMany("SubCategories")
+                        .HasForeignKey("ParentCategoryId");
+
+                    b.Navigation("ParentCategory");
+                });
+
             modelBuilder.Entity("E_Commerce_API.Models.Order", b =>
                 {
                     b.HasOne("E_Commerce_API.Models.User", "User")
@@ -255,6 +269,8 @@ namespace E_Commerce_API.Migrations
             modelBuilder.Entity("E_Commerce_API.Models.Category", b =>
                 {
                     b.Navigation("Products");
+
+                    b.Navigation("SubCategories");
                 });
 
             modelBuilder.Entity("E_Commerce_API.Models.Order", b =>

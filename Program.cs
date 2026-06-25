@@ -16,7 +16,7 @@ namespace E_Commerce_API
 {
     public class Program
     {
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
             // ===== إضافة CORS =====
@@ -112,6 +112,13 @@ namespace E_Commerce_API
             {
                 app.UseSwagger();
                 app.UseSwaggerUI();
+            }
+
+            // Seed Data
+            using (var scope = app.Services.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                await SeedData.SeedAsync(context);
             }
             app.UseCors("AllowFrontend");
             app.UseHttpsRedirection();

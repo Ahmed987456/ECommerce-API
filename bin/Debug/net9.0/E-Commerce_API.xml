@@ -149,28 +149,28 @@
             Admin فقط - حذف يوزر
             </summary>
         </member>
-        <member name="T:E_Commerce_API.Migrations.add_tables">
+        <member name="T:E_Commerce_API.Migrations.InitialCreate">
             <inheritdoc />
         </member>
-        <member name="M:E_Commerce_API.Migrations.add_tables.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:E_Commerce_API.Migrations.InitialCreate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:E_Commerce_API.Migrations.add_tables.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:E_Commerce_API.Migrations.InitialCreate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:E_Commerce_API.Migrations.add_tables.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:E_Commerce_API.Migrations.InitialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
-        <member name="T:E_Commerce_API.Migrations.altecategorytable">
+        <member name="T:E_Commerce_API.Migrations.addseeddata">
             <inheritdoc />
         </member>
-        <member name="M:E_Commerce_API.Migrations.altecategorytable.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:E_Commerce_API.Migrations.addseeddata.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:E_Commerce_API.Migrations.altecategorytable.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+        <member name="M:E_Commerce_API.Migrations.addseeddata.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
             <inheritdoc />
         </member>
-        <member name="M:E_Commerce_API.Migrations.altecategorytable.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+        <member name="M:E_Commerce_API.Migrations.addseeddata.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
             <inheritdoc />
         </member>
     </members>
