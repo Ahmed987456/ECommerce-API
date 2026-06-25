@@ -29,7 +29,7 @@ namespace E_Commerce_API.Controllers
         /// </summary>
         [Authorize(Roles = "Customer")]
         [HttpPost]
-        public async Task<IActionResult> AddItemForCar([FromForm] CreateCartItemDto dto)
+        public async Task<IActionResult> AddItemForCar([FromBody] CreateCartItemDto dto)
         {
             var userId = GetCurrentUserId();
             var product = await _productService.GetById(dto.ProductId);
@@ -75,7 +75,7 @@ namespace E_Commerce_API.Controllers
         /// </summary>
         [Authorize(Roles = "Customer")]
         [HttpPut]
-        public async Task<IActionResult> UpdateCartQuantity([FromForm] UpdateCartDto dto)
+        public async Task<IActionResult> UpdateCartQuantity([FromBody] UpdateCartDto dto)
         {
             var userId = GetCurrentUserId();
             var product = await _productService.GetById(dto.ProductId);

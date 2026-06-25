@@ -29,7 +29,7 @@ namespace E_Commerce_API.Services.OrderService
             order.OrderStatus = OrderStatus.Cancelled;
 
             await _context.SaveChangesAsync();
-            return "Succed";
+            return "Success";
         }
 
         public async Task<Order?> CreateOrder(int userId)
@@ -137,6 +137,11 @@ namespace E_Commerce_API.Services.OrderService
         public async Task UpdateStatus()
         {
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<IEnumerable<Order>> GetAllOrders()
+        {
+            return await _context.Orders.ToListAsync();
         }
     }
 }

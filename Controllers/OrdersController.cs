@@ -1,4 +1,5 @@
 ﻿using E_Commerce_API.Dtos.OrdersDto;
+using E_Commerce_API.Enums;
 using E_Commerce_API.Services.OrderService;
 using E_Commerce_API.Services.UserService;
 using Microsoft.AspNetCore.Authorization;
@@ -72,11 +73,16 @@ namespace E_Commerce_API.Controllers
         /// </summary>
         [Authorize(Roles = "Admin")]
         [HttpPut("UpdateStatus/{orderId}")]
-        public async Task<IActionResult> UpdateOraderStatus(int orderId, [FromForm] UpdateOrderStatusDto dto)
+        public async Task<IActionResult> UpdateOraderStatus(int orderId, [FromBody] UpdateOrderStatusDto dto)
         {
             var order = await _orderService.GetOrderById(orderId);
             if (order == null)
                 return NotFound("Not Order Found With This Id");
+
+            // ضيف الحماية دي
+            if (order.OrderStatus == OrderStatus.Cancelled)
+                return BadRequest("Cannot update a cancelled order");
+
             order.OrderStatus = dto.OrderStatus;
             await _orderService.UpdateStatus();
             return Ok("Order Status Updated Successfully");
@@ -99,6 +105,17 @@ namespace E_Commerce_API.Controllers
             if (result != "Success")
                 return BadRequest(result);
             return Ok("Order Cancelled Successfully");
+        }
+
+        /// <summary>
+        /// Customer كل الاوردرات للادمن تظهر
+        /// </summary>
+        [Authorize(Roles = "Admin")]
+        [HttpGet("AllOrders")]
+        public async Task<IActionResult> GetAllOrders()
+        {
+            var orders = await _orderService.GetAllOrders();
+            return Ok(orders);
         }
     }
 }

@@ -17,7 +17,7 @@ namespace E_Commerce_API.Controllers
         public CategorysController(ICategoryService categoryService, IMapper mapper, IProductService productService)
         {
             _categoryService = categoryService;
-            _mapper = mapper;
+            _mapper = mapper;   
             _productService = productService;
         }
 
@@ -48,7 +48,7 @@ namespace E_Commerce_API.Controllers
         /// </summary>
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public async Task<IActionResult> CreateAsync([FromForm] CreateCategoryDto dto)
+        public async Task<IActionResult> CreateAsync([FromBody] CreateCategoryDto dto)
         {
             var exists = await _categoryService.CategoryExists(dto.Name);
             if (exists)
@@ -77,7 +77,7 @@ namespace E_Commerce_API.Controllers
         /// </summary>
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateCategoryAsync(int id, [FromForm] UpdateCategoryDto dto)
+        public async Task<IActionResult> UpdateCategoryAsync(int id, [FromBody] UpdateCategoryDto dto)
         {
             var category = await _categoryService.GetById(id);
             if (category == null)
@@ -93,7 +93,7 @@ namespace E_Commerce_API.Controllers
         /// Admin فقط - حذف كاتيجوري
         /// </summary>
         [Authorize(Roles = "Admin")]
-        [HttpDelete]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCategoryAsync(int id)
         {
             var category = await _categoryService.GetById(id);

@@ -18,6 +18,7 @@ namespace E_Commerce_API.Services.OrderService
 
         Task<bool> HasOrders(int UserId);
 
-       
+        Task<IEnumerable<Order>> GetAllOrders();
+
     }
 }

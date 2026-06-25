@@ -79,6 +79,11 @@
             Customer فقط - إلغاء أوردر
             </summary>
         </member>
+        <member name="M:E_Commerce_API.Controllers.OrdersController.GetAllOrders">
+            <summary>
+            Customer كل الاوردرات للادمن تظهر
+            </summary>
+        </member>
         <member name="M:E_Commerce_API.Controllers.ProductsController.GetAllAsync">
             <summary>
             متاح للكل - عرض كل المنتجات
