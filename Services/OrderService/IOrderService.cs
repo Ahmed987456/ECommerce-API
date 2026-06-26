@@ -4,7 +4,7 @@ namespace E_Commerce_API.Services.OrderService
 {
     public interface IOrderService
     {
-        Task<Order?> CreateOrder(int userId);
+        Task<(Order? order, string? error)> CreateOrder(int userId);
 
         Task<List<UserOrdersDto>> GetAllUserOrders(int UserId);
 

@@ -1,6 +1,7 @@
-﻿using E_Commerce_API.Models;
+﻿using E_Commerce_API.Data;
+using E_Commerce_API.Enums;
+using E_Commerce_API.Models;
 using Microsoft.EntityFrameworkCore;
-using E_Commerce_API.Data;
 namespace E_Commerce_API
 {
     public static class SeedData
@@ -167,7 +168,21 @@ namespace E_Commerce_API
             };
 
             await context.Products.AddRangeAsync(products);
+
             await context.SaveChangesAsync();
+            // ===== Admin User =====
+            if (!context.Users.Any(u => u.Role == UserRole.Admin))
+            {
+                var admin = new User
+                {
+                    Name = "Ahmed Oraby",
+                    Email = "ahmedoraby57000@gmail.com",
+                    Password = BCrypt.Net.BCrypt.HashPassword("123456789"),
+                    Role = UserRole.Admin
+                };
+                await context.Users.AddAsync(admin);
+                await context.SaveChangesAsync();
+            }
         }
     }
 }

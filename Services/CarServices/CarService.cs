@@ -55,6 +55,7 @@ namespace E_Commerce_API.Services.CarServices
 
             var items = cartItems.Select(c => new CartItemDto
             {
+                ProductId = c.ProductId,
                 ProductName = c.Product.Name,
                 Price = c.Product.Price,
                 Quantity = c.Quantity,

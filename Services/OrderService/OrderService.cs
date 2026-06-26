@@ -32,20 +32,24 @@ namespace E_Commerce_API.Services.OrderService
             return "Success";
         }
 
-        public async Task<Order?> CreateOrder(int userId)
+        public async Task<(Order? order, string? error)> CreateOrder(int userId)
         {
             var cartItems = await _context.CartItems
                 .Include(c => c.Product)
                 .Where(c => c.UserId == userId)
                 .ToListAsync();
 
-            // السلة فاضية
             if (!cartItems.Any())
-                return null;
+                return (null, "السلة فاضية");
+
+            // تحقق من الكميات الأول
+            foreach (var item in cartItems)
+            {
+                if (item.Quantity > item.Product.StockQuantity)
+                    return (null, $"الكمية المطلوبة من {item.Product.Name} غير متاحة، المتاح {item.Product.StockQuantity} فقط");
+            }
 
             double total = 0;
-
-            // إنشاء الأوردر
             var order = new Order
             {
                 UserId = userId,
@@ -54,17 +58,10 @@ namespace E_Commerce_API.Services.OrderService
             };
 
             await _context.Orders.AddAsync(order);
-
-            // لازم يتعمل Save عشان Id يتولد
             await _context.SaveChangesAsync();
 
-            // لف على عناصر الكارت
             foreach (var item in cartItems)
             {
-                // تأكيد إن الكمية مازالت متاحة
-                if (item.Quantity > item.Product.StockQuantity)
-                    return null;
-
                 var orderItem = new OrderItem
                 {
                     OrderId = order.Id,
@@ -72,25 +69,16 @@ namespace E_Commerce_API.Services.OrderService
                     Quantity = item.Quantity,
                     Price = item.Product.Price
                 };
-
                 await _context.OrderItems.AddAsync(orderItem);
-
-                // حساب الإجمالي
                 total += item.Quantity * item.Product.Price;
-
-                // تقليل المخزون
                 item.Product.StockQuantity -= item.Quantity;
             }
 
-            // حفظ السعر النهائي
             order.TotalPrice = total;
-
-            // حذف عناصر السلة
             _context.CartItems.RemoveRange(cartItems);
-
             await _context.SaveChangesAsync();
 
-            return order;
+            return (order, null);
         }
 
         public async Task<List<UserOrdersDto>> GetAllUserOrders(int UserId)
