@@ -77,7 +77,10 @@ namespace E_Commerce_API
             });
 
             builder.Services.AddDbContext<AppDbContext>(
-                options => options.UseSqlServer(builder.Configuration.GetConnectionString("ConectionString")));
+                options => options.UseMySql(
+    builder.Configuration.GetConnectionString("ConectionString"),
+    ServerVersion.AutoDetect(builder.Configuration.GetConnectionString("ConectionString"))
+));
 
 
             builder.Services.AddScoped<IProductService, ProductService>();
@@ -113,7 +116,12 @@ namespace E_Commerce_API
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-
+            using (var scope = app.Services.CreateScope())
+            {
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                await context.Database.MigrateAsync();
+                await SeedData.SeedAsync(context);
+            }
             // Seed Data
             using (var scope = app.Services.CreateScope())
             {
