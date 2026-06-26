@@ -123,12 +123,6 @@ namespace E_Commerce_API
                 await context.Database.MigrateAsync();
                 await SeedData.SeedAsync(context);
             }
-            // Seed Data
-            using (var scope = app.Services.CreateScope())
-            {
-                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                await SeedData.SeedAsync(context);
-            }
             app.UseCors("AllowFrontend");
             app.UseHttpsRedirection();
             app.UseAuthentication();

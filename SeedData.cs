@@ -8,6 +8,8 @@ namespace E_Commerce_API
     {
         public static async Task SeedAsync(AppDbContext context)
         {
+            if (await context.Categories.AnyAsync())
+                return;
             Console.WriteLine("=== Seeding Started ===");
             // ===== Categories =====
             var electronics = new Category { Name = "Electronics" };
