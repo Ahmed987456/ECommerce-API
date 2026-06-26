@@ -116,6 +116,7 @@ namespace E_Commerce_API
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+
             using (var scope = app.Services.CreateScope())
             {
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
