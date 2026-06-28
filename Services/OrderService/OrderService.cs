@@ -127,9 +127,29 @@ namespace E_Commerce_API.Services.OrderService
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<Order>> GetAllOrders()
+        public async Task<IEnumerable<AdminOrderDto>> GetAllOrders()
         {
-            return await _context.Orders.ToListAsync();
+            return await _context.Orders
+                .Include(o => o.User)
+                .Include(o => o.OrderItems)
+                .ThenInclude(i => i.Product)
+                .Select(o => new AdminOrderDto
+                {
+                    Id = o.Id,
+                    OrderDate = o.OrderDate,
+                    TotalPrice = o.TotalPrice,
+                    OrderStatus = o.OrderStatus,
+                    UserName = o.User.Name,
+                    UserEmail = o.User.Email,
+                    Items = o.OrderItems.Select(i => new OrderItemDto
+                    {
+                        ProductName = i.Product.Name,
+                        Quantity = i.Quantity,
+                        Price = i.Price,
+                        ItemTotal = i.Quantity * i.Price
+                    }).ToList()
+                })
+                .ToListAsync();
         }
     }
 }

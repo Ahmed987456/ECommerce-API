@@ -97,19 +97,31 @@ namespace E_Commerce_API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateProductAsync(int id, [FromBody] UpdateProductDto dto)
         {
+            if (dto.StockQuantity.HasValue && dto.StockQuantity.Value < 0)
+                return BadRequest("الكمية لا يمكن أن تكون سالبة");
+
+            if (dto.Price.HasValue && dto.Price.Value < 0)
+                return BadRequest("السعر لا يمكن أن يكون سالب");
+
             var product = await _productSercive.GetById(id);
             if (product == null)
                 return NotFound("Not Product Found With This ID");
+
             if (!string.IsNullOrWhiteSpace(dto.Name))
                 product.Name = dto.Name;
+
             if (!string.IsNullOrEmpty(dto.Description))
                 product.Description = dto.Description;
+
             if (dto.Price.HasValue)
                 product.Price = dto.Price.Value;
+
             if (dto.StockQuantity.HasValue)
                 product.StockQuantity = dto.StockQuantity.Value;
+
             if (!string.IsNullOrEmpty(dto.ImageUrl))
                 product.ImageUrl = dto.ImageUrl;
+
             if (dto.CategoryId.HasValue)
             {
                 var category = await _categoryService.GetById(dto.CategoryId.Value);
