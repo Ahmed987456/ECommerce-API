@@ -4,5 +4,7 @@
     {
         public List<CartItemDto> Items { get; set; }
         public double TotalPrice { get; set; }
+
+        public List<string> Warnings { get; set; } = new List<string>();
     }
 }

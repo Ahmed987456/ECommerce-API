@@ -46,27 +46,50 @@ namespace E_Commerce_API.Services.CarServices
                 .Where(c => c.UserId == userId)
                 .ToListAsync();
 
-            if (!cartItems.Any())
-                return new CartDto
-                {
-                    Items = new List<CartItemDto>(),
-                    TotalPrice = 0
-                };
+            var warnings = new List<string>();
 
-            var items = cartItems.Select(c => new CartItemDto
+            if (!cartItems.Any())
+                return new CartDto { Items = new List<CartItemDto>(), TotalPrice = 0 };
+
+            // تحقق من الكميات وعدلها
+            foreach (var item in cartItems)
             {
+                if (item.Quantity > item.Product.StockQuantity)
+                {
+                    if (item.Product.StockQuantity == 0)
+                    {
+                        warnings.Add($"{item.Product.Name} نفذت الكمية وتم إزالته من السلة");
+                        _context.CartItems.Remove(item);
+                    }
+                    else
+                    {
+                        warnings.Add($"{item.Product.Name} الكمية المتاحة {item.Product.StockQuantity} فقط، تم تعديل طلبك");
+                        item.Quantity = item.Product.StockQuantity;
+                    }
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            var updatedItems = await _context.CartItems
+                .Include(c => c.Product)
+                .Where(c => c.UserId == userId)
+                .ToListAsync();
+
+            var items = updatedItems.Select(c => new CartItemDto
+            {
+                ProductId = c.ProductId,
                 ProductName = c.Product.Name,
                 Price = c.Product.Price,
                 Quantity = c.Quantity,
                 ItemTotal = c.Quantity * c.Product.Price
             }).ToList();
 
-            var totalPrice = items.Sum(x => x.ItemTotal);
-
             return new CartDto
             {
                 Items = items,
-                TotalPrice = totalPrice
+                TotalPrice = items.Sum(x => x.ItemTotal),
+                Warnings = warnings
             };
         }
 
