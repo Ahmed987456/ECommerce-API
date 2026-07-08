@@ -1,0 +1,10 @@
+﻿{
+  "ConnectionStrings": {
+    "ConectionString": "your-connection-string-here"
+  },
+  "JWT": {
+    "Issuer": "your-issuer",
+    "Audience": "your-audience",
+    "Key": "your-secret-key"
+  }
+}

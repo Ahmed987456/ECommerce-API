@@ -21,7 +21,7 @@ namespace E_Commerce_API.Controllers
         /// متاح للكل - تسجيل الدخول
         /// </summary>
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromForm] LoginDto dto)
+        public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
             var user = await _authService.Login(dto.Email, dto.Password);
             if (user == null)

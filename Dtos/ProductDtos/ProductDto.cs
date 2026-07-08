@@ -16,5 +16,7 @@ namespace E_Commerce_API.Dtos.ProductDtos
 
         public string CategoryName { get; set; }
         public int CategoryId { get; set; }
+
+        public string Description { get; set; }
     }
 }
